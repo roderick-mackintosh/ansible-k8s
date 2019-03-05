@@ -1,4 +1,10 @@
 ---
+
+- python_requirements_facts:
+    dependencies:
+      - openshift
+      - requests
+
 - name: Download rbac-kdd.yaml
   get_url:
     url: https://tinyurl.com/yb4xturm
@@ -42,12 +48,3 @@
     dest: ./kubeadm-init.out
     flat: true
 
-- name: Apply clusterrole
-  k8s:
-    state: present
-    src: ./rbac-kdd.yaml
-
-- name: Apply calico
-  k8s: 
-    state: present
-    src: ./calico.yaml
