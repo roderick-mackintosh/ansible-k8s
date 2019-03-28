@@ -13,3 +13,8 @@
 - name: Execute join command to connect to master
   shell: /bin/bash kubeadm-join
   when: not kubeletconf.stat.exists
+
+- name: Install nfs-common
+  apt:
+    name: ['nfs-common']
+    state: present
