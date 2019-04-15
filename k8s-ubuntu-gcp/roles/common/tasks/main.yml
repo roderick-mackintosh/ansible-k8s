@@ -17,7 +17,7 @@
 
   - name: Install kubeadm
     apt: 
-      name: ['kubeadm=1.13.4-00', 'kubelet=1.13.4-00', 'kubectl=1.13.4-00', 'kubernetes-cni=0.6.0-00']
+      name: ['kubeadm=1.14.1-00', 'kubelet=1.14.1-00', 'kubectl=1.14.1-00', 'kubernetes-cni=0.7.5-00']
       state: present
 
   - name: Install tree
