@@ -1,27 +1,24 @@
 ---
 
-- python_requirements_facts:
-    dependencies:
-      - openshift
-      - requests
-
 - name: Download rbac-kdd.yaml
   get_url:
     url: https://tinyurl.com/yb4xturm
     dest: /home/roderick/rbac-kdd.yaml
     mode: 0644
+  register: initial_setup
 
 - name: Download calico.yaml
   get_url:
     url: https://tinyurl.com/y8lvqc9g
     dest: /home/roderick/calico.yaml
     mode: 0644
+  register: initial_setup
 
 - stat: path=/etc/kubernetes/admin.conf
   register: kubeadmconf
 
 - name: Initialize master
-  shell: kubeadm init --kubernetes-version 1.13.3 --pod-network-cidr 192.168.0.0/16 |tee kubeadm-init.out 
+  shell: kubeadm init --kubernetes-version 1.14.2 --pod-network-cidr 192.168.0.0/16 |tee kubeadm-init.out 
   become: true
   when: not kubeadmconf.stat.exists
 
@@ -47,4 +44,328 @@
     src: kubeadm-init.out
     dest: ./kubeadm-init.out
     flat: true
+
+- name: Add bash auto completion to bashrc
+  lineinfile:
+    path: .bashrc
+    line: 'source <(kubectl completion bash)'
+
+- name: Create /opt/sfw
+  file:
+    path: /opt/sfw
+    state: directory
+    owner: root
+    group: root
+    mode: 01777
+  become: true
+
+- name: Line insert in /etc/exports
+  lineinfile:
+    path: /etc/exports
+    line: '/opt/sfw/ *(rw,sync,no_root_squash,subtree_check)'
+  become: true
+  register: exports
+
+- name: export nfs
+  command: 'exportfs -ra'
+  when: exports.changed
+
+- name: Create lab 4 directory
+  file:
+    path: ./4
+    state: directory
+    owner: roderick
+    group: roderick
+    mode: 0755
+
+- name: Copy low-resource-range.yaml for lab 4
+  copy:
+    src: 4/low-resource-range.yaml
+    dest: ./4/low-resource-range.yaml
+    owner: roderick
+    group: roderick
+
+- name: Download complete-demo.yaml for lab 4
+  get_url:
+    url: https://tinyurl.com/y8bn2awp
+    dest: ./4/complete-demo.yaml
+    mode: 0644
+
+- name: Create lab 5 directory
+  file:
+    path: ./5
+    state: directory
+    owner: roderick
+    group: roderick
+    mode: 0755
+
+- name: Create lab 6 directory
+  file:
+    path: ./6
+    state: directory
+    owner: roderick
+    group: roderick
+    mode: 0755
+
+- name: Copy job.yaml for Lab 6
+  copy:
+    src: 6/job.yaml
+    dest: ./6/job.yaml
+    owner: roderick
+    group: roderick
+
+- name: Copy cronjob.yaml for Lab 6
+  copy:
+    src: 6/cronjob.yaml
+    dest: ./6/cronjob.yaml
+    owner: roderick
+    group: roderick
+
+- name: Create lab 7 directory
+  file:
+    path: ./7
+    state: directory
+    owner: roderick
+    group: roderick
+    mode: 0755
+
+- name: Copy rs.yaml for Lab 7
+  copy:
+    src: 7/rs.yaml
+    dest: ./7/rs.yaml
+    owner: roderick
+    group: roderick
+
+- name: Copy ds.yaml for Lab 7
+  copy:
+    src: 7/ds.yaml
+    dest: ./7/ds.yaml
+    owner: roderick
+    group: roderick
+
+- name: Create lab 8 directory
+  file:
+    path: ./8
+    state: directory
+    owner: roderick
+    group: roderick
+    mode: 0755
+
+- name: Copy nginx-one.yaml for Lab 8
+  copy:
+    src: 8/nginx-one.yaml
+    dest: ./8/nginx-one.yaml
+    owner: roderick
+    group: roderick
+
+- name: Create lab 9 directory
+  file:
+    path: ./9
+    state: directory
+    owner: roderick
+    group: roderick
+    mode: 0755
+
+- name: Copy nfs-pod.yaml for Lab 9
+  copy:
+    src: 9/nfs-pod.yaml
+    dest: ./9/nfs-pod.yaml
+    owner: roderick
+    group: roderick
+
+- name: Copy PVol.yaml for Lab 9
+  copy:
+    src: 9/PVol.yaml
+    dest: ./9/PVol.yaml
+    owner: roderick
+    group: roderick
+
+- name: Copy pvc.yaml for Lab 9
+  copy:
+    src: 9/pvc.yaml
+    dest: ./9/pvc.yaml
+    owner: roderick
+    group: roderick
+
+- name: Copy storage-quota.yaml for Lab 9
+  copy:
+    src: 9/storage-quota.yaml
+    dest: ./9/storage-quota.yaml
+    owner: roderick
+    group: roderick
+
+- name: Copy simpleshell.yaml for Lab 9
+  copy:
+    src: 9/simpleshell.yaml
+    dest: ./9/simpleshell.yaml
+    owner: roderick
+    group: roderick
+
+- name: Copy cap-map.yaml for Lab 9
+  copy:
+    src: 9/cap-map.yaml
+    dest: ./9/cap-map.yaml
+    owner: roderick
+    group: roderick
+
+- name: Create lab 10 directory
+  file:
+    path: ./10
+    state: directory
+    owner: roderick
+    group: roderick
+    mode: 0755
+
+- name: Copy ingress.rbac.yaml for Lab 10
+  copy:
+    src: 10/ingress.rbac.yaml
+    dest: ./10/ingress.rbac.yaml
+    owner: roderick
+    group: roderick
+
+- name: Copy ingress.rule.yaml for Lab 10
+  copy:
+    src: 10/ingress.rule.yaml
+    dest: ./10/ingress.rule.yaml
+    owner: roderick
+    group: roderick
+
+#- name: Download traefik-ds.yaml
+#  get_url:
+#    url: https://raw.githubusercontent.com/containous/traefik/master/examples/k8s/traefik-ds.yaml
+#    dest: ./10/traefik-ds.yaml
+#    mode: 0644
+
+- name: Create lab 11 directory
+  file:
+    path: ./11
+    state: directory
+    owner: roderick
+    group: roderick
+    mode: 0755
+
+- name: Create lab 12 directory
+  file:
+    path: ./12
+    state: directory
+    owner: roderick
+    group: roderick
+    mode: 0755
+
+- name: Create lab 13 directory
+  file:
+    path: ./13
+    state: directory
+    owner: roderick
+    group: roderick
+    mode: 0755
+
+- name: Create lab 15 directory
+  file:
+    path: ./15
+    state: directory
+    owner: roderick
+    group: roderick
+    mode: 0755
+
+- name: Download helm-v2.7.0-linux-amd64.tar.gz
+  get_url:
+    url: https://goo.gl/nbEcHn
+    dest: ./15/helm-v2.7.0-linux-amd64.tar.gz
+    owner: roderick
+    group: roderick
+    mode: 0644
+
+- name: Create lab 16 directory
+  file:
+    path: ./16
+    state: directory
+    owner: roderick
+    group: roderick
+    mode: 0755
+
+- name: Copy rbac role-dev.yaml to Lab 16
+  copy:
+    src: 16/role-dev.yaml
+    dest: ./16/role-dev.yaml
+    owner: roderick
+    group: roderick
+
+- name: Copy rbac role-prod.yaml to Lab 16
+  copy:
+    src: 16/role-prod.yaml
+    dest: ./16/role-prod.yaml
+    owner: roderick
+    group: roderick
+
+- name: Copy rbac rolebind.yaml to Lab 16
+  copy:
+    src: 16/rolebind.yaml
+    dest: ./16/rolebind.yaml
+    owner: roderick
+    group: roderick
+
+- name: Copy rbac rolebindprod.yaml
+  copy:
+    src: 16/rolebindprod.yaml
+    dest: ./16/rolebindprod.yaml
+    owner: roderick
+    group: roderick
+
+- name: User DevRod creation
+  user:
+    name: DevRod
+    shell: /bin/bash
+
+- stat: path=./16/DevRod.key
+  register: DevRodkey
+
+- name: Generate private key for user DevRod
+  shell: openssl genrsa -out ./16/DevRod.key 2048
+  when: not DevRodkey.stat.exists
+
+- stat: path=./16/DevRod.csr
+  register: DevRodCsr
+
+- name: Generate csr for user DevRod
+  shell: openssl req -new -key ./16/DevRod.key -out ./16/DevRod.csr -subj "/CN=DevRod/O=development"
+  when: not DevRodCsr.stat.exists
+
+- stat: path=./16/DevRod.crt
+  register: DevRodCrt
+
+- name: Generate signed certificate DevRod.crt
+  shell: openssl x509 -req -in ./16/DevRod.csr -CA /etc/kubernetes/pki/ca.crt -CAkey /etc/kubernetes/pki/ca.key -CAcreateserial -out ./16/DevRod.crt -days 45
+  become: true
+  when: not DevRodCrt.stat.exists
+
+- name: Copy config from $HOME/.kube to Lab 16
+  copy:
+    src: .kube/config
+    dest: ./16/cluster-api-config
+    remote_src: yes
+    owner: roderick
+    group: roderick
+
+- name: Install ./rbac-kdd.yaml
+  become: false
+  command: kubectl create -f ./rbac-kdd.yaml
+  register: initial_install
+  when: initial_setup.changed
+
+- name: Install calico pod networks
+  become: false
+  command: kubectl create -f ./calico.yaml
+  register: initial_install
+  when: initial_setup.changed
+
+- name: Pause 2 mins
+  pause:
+    minutes: 2
+  when: initial_install.changed
+
+- name: Remove Initial Taints from Master
+  become: false
+  command: kubectl taint node lfs258-master node-role.kubernetes.io/master:NoSchedule-
+  when: initial_install.changed
 

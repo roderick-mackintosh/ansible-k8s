@@ -1,10 +1,5 @@
 ---
 
-- python_requirements_facts:
-    dependencies:
-      - openshift
-      - requests
-
 - name: Download rbac-kdd.yaml
   get_url:
     url: https://tinyurl.com/yb4xturm
@@ -12,6 +7,7 @@
     owner: roderick
     group: roderick
     mode: 0644
+  register: initial_setup
 
 - name: Download calico.yaml
   get_url:
@@ -20,12 +16,13 @@
     owner: roderick
     group: roderick
     mode: 0644
+  register: initial_setup
 
 - stat: path=/etc/kubernetes/admin.conf
   register: kubeadmconf
 
 - name: Initialize master
-  shell: kubeadm init --kubernetes-version 1.14.1 --pod-network-cidr 192.168.0.0/16 |tee kubeadm-init.out 
+  shell: kubeadm init --kubernetes-version 1.14.2 --pod-network-cidr 192.168.0.0/16 |tee kubeadm-init.out 
   become: true
   when: not kubeadmconf.stat.exists
 
@@ -362,7 +359,22 @@
 - name: Install ./rbac-kdd.yaml
   become: false
   command: kubectl create -f ./rbac-kdd.yaml
+  register: initial_install
+  when: initial_setup.changed
 
 - name: Install calico pod networks
   become: false
   command: kubectl create -f ./calico.yaml
+  register: initial_install
+  when: initial_setup.changed
+
+- name: Pause 2 mins
+  pause:
+    minutes: 2
+  when: initial_install.changed
+
+- name: Remove Initial Taints from Master
+  become: false
+  command: kubectl taint node lfs258-master node-role.kubernetes.io/master:NoSchedule-
+  when: initial_install.changed
+

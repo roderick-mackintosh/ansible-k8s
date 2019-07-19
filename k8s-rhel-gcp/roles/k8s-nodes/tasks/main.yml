@@ -8,7 +8,7 @@
   register: kubeletconf
 
 - name: Extract command from kubeadm-init.out
-  shell: grep "kubeadm join" kubeadm-init.out > kubeadm-join
+  shell: grep -A1 "kubeadm join" kubeadm-init.out > kubeadm-join
 
 - name: Execute join command to connect to master
   shell: /bin/bash kubeadm-join

@@ -1,28 +1,74 @@
 ---
-  - name: Install docker.io
-    yum: 
-      name: docker.io
-      state: latest
-      update_cache: yes
+- name: Disable SeLinux
+  selinux:
+    state: disabled
+  register: reboot_required
 
-  - name: Add an RPM gpg key
-    rpm_key:
-      state: present
-      url: https://packages.cloud.google.com/yum/doc/yum-key.gpg
-    rpm_key:
-      state: present
-      url: https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
-  
-  - name: kubernetes repository list
-    yum_repository:
-      name: kubernetes
-      baseurl: 'https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64'
-      file: kubernetes.repo
-      gpgcheck: yes
-      update_cache: yes 
+- name: Create sysctl config k8s.conf
+  copy:
+    dest: /etc/sysctl.d/k8s.conf
+    content: |
+      net.bridge.bridge-nf-call-ip6tables = 1
+      net.bridge.bridge-nf-call-iptables = 1
+  register: reboot_required
 
-  - name: Install kubeadm
-    yum: 
-      name: ['kubeadm=1.13.4-00', 'kubelet=1.13.4-00', 'kubectl=1.13.4-00']
-      state: present
+- name: Reboot immediately if there was a change
+  shell: "sleep 5 && reboot"
+  async: 1
+  poll: 0
+  when: reboot_required is changed
+
+- name: Wait for the reboot to complete if there was a change
+  wait_for_connection:
+    connect_timeout: 20
+    sleep: 5
+    delay: 5
+    timeout: 300
+  when: reboot_required is changed
+
+- name: Install docker.x86_64
+  yum: 
+    name: docker.x86_64
+    state: latest
+    update_cache: yes
+
+- name: Start docker service
+  service:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Add yum-key.gpg
+  rpm_key:
+    state: present
+    key: https://packages.cloud.google.com/yum/doc/yum-key.gpg
+
+- name: add rpm-package-key.gpg
+  rpm_key:
+    state: present
+    key: https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+
+- name: kubernetes repository list
+  yum_repository:
+    name: kubernetes
+    description: kubernetes yum repository
+    baseurl: 'https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64'
+    file: kubernetes.repo
+    gpgcheck: yes
+
+- name: Install kubernetes
+  yum: 
+    name: ['kubeadm-1.14.2-0.x86_64', 'kubelet-1.14.2-0.x86_64', 'kubectl-1.14.2-0.x86_64']
+    state: present
+    update_cache: yes
+
+- name: Ensure module br_netfilter is loaded
+  modprobe:
+    name: br_netfilter
+    state: present
+
+- name: Install nfs-utils
+  yum:
+    name: ['nfs-utils']
+    state: present
 
