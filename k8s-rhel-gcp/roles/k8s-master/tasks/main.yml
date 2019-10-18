@@ -18,7 +18,7 @@
   register: kubeadmconf
 
 - name: Initialize master
-  shell: kubeadm init --kubernetes-version 1.14.2 --pod-network-cidr 192.168.0.0/16 |tee kubeadm-init.out 
+  shell: kubeadm init --kubernetes-version 1.16.2 --pod-network-cidr 192.168.0.0/16 |tee kubeadm-init.out 
   become: true
   when: not kubeadmconf.stat.exists
 
@@ -268,10 +268,10 @@
     group: roderick
     mode: 0755
 
-- name: Download helm-v2.7.0-linux-amd64.tar.gz
+- name: Download helm-v2.14.3-linux-amd64.tar.gz
   get_url:
-    url: https://goo.gl/nbEcHn
-    dest: ./15/helm-v2.7.0-linux-amd64.tar.gz
+    url: https://tinyurl.com/yxnxgczw
+    dest: ./15/helm-v2.14.3-linux-amd64.tar.gz
     owner: roderick
     group: roderick
     mode: 0644

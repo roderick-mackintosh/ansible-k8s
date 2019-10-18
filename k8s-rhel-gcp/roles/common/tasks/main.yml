@@ -58,7 +58,7 @@
 
 - name: Install kubernetes
   yum: 
-    name: ['kubeadm-1.14.2-0.x86_64', 'kubelet-1.14.2-0.x86_64', 'kubectl-1.14.2-0.x86_64']
+    name: ['kubeadm-1.16.2-0.x86_64', 'kubelet-1.16.2-0.x86_64', 'kubectl-1.16.2-0.x86_64']
     state: present
     update_cache: yes
 

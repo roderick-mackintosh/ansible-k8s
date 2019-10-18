@@ -13,3 +13,6 @@
 - name: Execute join command to connect to master
   shell: /bin/bash kubeadm-join
   when: not kubeletconf.stat.exists
+
+- name: Remove local file
+  local_action: file path=kubeadm-init.out state=absent
